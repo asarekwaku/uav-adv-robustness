@@ -1,0 +1,31 @@
+# Local smoke test: VisDrone val only, 16 eval images, 1-epoch fine-tune on val, tiny sweeps.
+# NOT a valid experiment (trains on the evaluation split) - it only checks the pipeline runs end to end.
+data:
+  splits: [val]
+  limit: 16
+model:
+  weights: runs/smoke/weights/last.pt
+  tag: smoke
+train:
+  data: data/VisDrone/visdrone_smoke.yaml
+  epochs: 1
+  batch: 8
+  workers: 0
+  name: smoke
+  imgsz: 320
+eval:
+  batch: 8
+  latency_images: 10
+attack:
+  eps: [4, 8]
+  pgd_steps: 3
+  seeds: [0, 1]
+  batch: 4
+defense:
+  candidates:
+    - {name: jpeg, quality: 75}
+    - {name: gaussian, sigma: 1.0}
+  max_clean_drop: 1.0
+adv_train:
+  epochs: 1
+  name: smoke_adv

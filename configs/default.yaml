@@ -1,0 +1,75 @@
+# Default experiment configuration.
+# Override any key from the command line, e.g.
+#   python scripts/run_all.py --set attack.eps=[2,4] --set paths.out_dir=/content/drive/MyDrive/uavadv
+# or layer another YAML on top with --config configs/colab.yaml.
+
+paths:
+  data_dir: data/VisDrone        # converted YOLO-format dataset (images/{train,val,test}, labels/...)
+  eval_dir: data/eval_sets       # fixed letterboxed evaluation sets + generated adversarial sets
+  out_dir: results               # CSVs, JSON metadata, plots
+  runs_dir: runs                 # Ultralytics training / validation runs
+
+seed: 0
+device: auto                     # auto | cpu | mps | 0 | 0,1
+
+data:
+  splits: [train, val, test]     # train -> fitting, val -> model selection + defense calibration, test (= test-dev) -> final report only
+  limit: null                    # cap images per evaluation set (null = all). Use small values for smoke tests.
+
+model:
+  init_weights: yolo11n.pt       # COCO-pretrained starting checkpoint
+  weights: runs/baseline/weights/best.pt   # fine-tuned VisDrone baseline used for every evaluation
+  tag: baseline                  # name used for folders of white-box adversarial sets generated against this model
+
+train:
+  data: null                     # dataset YAML; null -> <data_dir>/visdrone.yaml
+  imgsz: 640
+  epochs: 100
+  batch: 16
+  patience: 20
+  workers: 8
+  name: baseline
+
+eval:
+  imgsz: 640                     # evaluation sets are letterboxed once to imgsz x imgsz and stored as lossless PNG
+  batch: 16
+  conf: 0.001                    # mAP evaluation threshold (Ultralytics default)
+  iou: 0.7                       # NMS IoU for mAP evaluation
+  match_conf: 0.25               # operating-point threshold for recall / attack-success metrics
+  match_iou: 0.5                 # IoU for a ground-truth object to count as detected
+  latency_images: 100            # images timed (batch 1) for the latency benchmark
+
+attack:
+  attacks: [fgsm, pgd]
+  objective: untargeted          # untargeted (maximise detection loss) | vanish (suppress all confidences = object hiding)
+  eps: [1, 2, 4, 8]              # L_inf budgets in 1/255 units
+  pgd_steps: 10
+  pgd_alpha: null                # step size in 1/255 units; null -> 2.5 * eps / steps (Madry et al.)
+  random_start: true             # PGD only
+  seeds: [0]                     # PGD random-start seeds; use [0, 1, 2] for final runs
+  batch: 8
+
+defense:
+  # Candidates swept on the *validation* split by scripts/calibrate_defense.py
+  candidates:
+    - {name: jpeg, quality: 90}
+    - {name: jpeg, quality: 75}
+    - {name: jpeg, quality: 50}
+    - {name: median, k: 3}
+    - {name: gaussian, sigma: 0.5}
+    - {name: gaussian, sigma: 1.0}
+    - {name: bitdepth, bits: 5}
+    - {name: bitdepth, bits: 4}
+  calibration_eps: 4             # attack budget used when choosing the defense
+  max_clean_drop: 0.02           # max allowed absolute drop in clean mAP@0.5 on val
+  chosen: null                   # filled from results/chosen_defense.json if null
+  adaptive: true                 # also run BPDA / differentiable-through-defense PGD against the chosen defense
+
+adv_train:
+  enabled: false
+  attack: fgsm_rs                # fgsm_rs (FGSM with random start, Wong et al. 2020) | pgd
+  eps: 4                         # 1/255 units
+  pgd_steps: 3
+  ratio: 0.5                     # fraction of each batch replaced by adversarial images
+  epochs: 50
+  name: advtrain

@@ -1,0 +1,12 @@
+# University research lab GPU node. Edit the paths to your scratch/project storage.
+paths:
+  data_dir: /scratch/$USER/uavadv/data/VisDrone
+  eval_dir: /scratch/$USER/uavadv/eval_sets
+  out_dir: results
+  runs_dir: runs
+train:
+  batch: 64
+  workers: 8
+attack:
+  seeds: [0, 1, 2]
+  batch: 16

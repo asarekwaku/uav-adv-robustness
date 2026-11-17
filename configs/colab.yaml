@@ -1,0 +1,11 @@
+# Google Colab: dataset on the fast local disk, everything you want to keep on Google Drive.
+paths:
+  data_dir: /content/data/VisDrone
+  eval_dir: /content/drive/MyDrive/uavadv/eval_sets   # adversarial sets are cached here, so a disconnect resumes
+  out_dir: /content/drive/MyDrive/uavadv/results
+  runs_dir: /content/drive/MyDrive/uavadv/runs
+model:
+  weights: /content/drive/MyDrive/uavadv/runs/baseline/weights/best.pt
+train:
+  batch: 32          # T4 16 GB; use 64 on A100
+  workers: 2
