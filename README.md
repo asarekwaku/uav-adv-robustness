@@ -14,7 +14,7 @@ Surveillance: A Proposed Robustness Evaluation"*. Every script implements one bo
 
 ## Where to run
 
-* **Colab:** open `notebooks/colab_pipeline.ipynb`. It uses `configs/colab.yaml` (dataset on local disk, results on Drive, resumable).
+* **Colab:** [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/asarekwaku/uav-adv-robustness/blob/main/notebooks/colab_pipeline.ipynb) — or open `notebooks/colab_pipeline.ipynb`. It uses `configs/colab.yaml` (dataset on local disk, results on Drive, resumable).
 * **Lab cluster:** edit the paths in `configs/lab.yaml`, then `sbatch slurm/run_pipeline.sbatch`.
 * **Laptop smoke test** (tests the code only, not a valid experiment, because it trains on val):
   ```bash
